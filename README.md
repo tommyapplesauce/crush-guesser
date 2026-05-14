@@ -5,6 +5,7 @@ A playable web prototype for a nostalgic high-school locker mystery that disguis
 ## What is implemented
 
 - Mobile-first static web app with no build dependency required.
+- Mockup-inspired visual shell with a warm locker interior, pixel RPG-style dialogue box, torn lined-paper interaction area, Trapper Keeper prop, and combination wheel overlays.
 - Hallway/title scene, name-length note, centered locker scene, locker clue rows, open-locker beat, Trapper Keeper clue rows, round-lock beat, and final name reveal.
 - Core puzzle logic is separated from presentation in `src/crushLogic.js`.
 - Game state names are centralized in `src/gameStates.js`.
@@ -26,18 +27,17 @@ npm test
 
 ## Temporary/final assets
 
-The current prototype uses CSS placeholder art so the game is playable before final assets are wired in. The easiest way to add your Google Drive/mockup assets is to place exported images in a repository folder such as `public/assets/` or `src/assets/`, then replace the CSS placeholder hallway, locker, paper, and Trapper Keeper layers with those files.
+The current prototype uses CSS placeholder art based on the supplied mockups so the game is playable before final assets are wired in. The easiest way to add your separated assets is to place exported images in a repository folder such as `public/assets/` or `src/assets/`, then replace the CSS placeholder locker interior, dialogue box, paper, Trapper Keeper, and lock layers with those files.
 
 Recommended names:
 
-- `hallway.png`
-- `hands-paper.png`
-- `locker-closeup.png`
-- `locker-open.png`
+- `locker-interior.png`
+- `dialogue-box.png`
+- `torn-lined-paper.png`
 - `trapper-keeper-closed.png`
 - `trapper-keeper-open.png`
-- `combo-lock.png`
-- `paper-texture.png`
+- `side-combo-lock.png`
+- `combo-wheel.png`
 
 ## Version 1 limitations
 

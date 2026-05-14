@@ -137,15 +137,62 @@ function render() {
   const lockerNumber = game.nameLength ? 100 + game.nameLength : NaN;
   app.className = `app-shell ${sceneForState(game.currentState)}`;
   app.innerHTML = `
-    <div class="hallway" aria-hidden="true">
-      <div class="locker-row">${lockerMarkup(lockerNumber)}</div>
+    <div class="scene-stage" aria-hidden="true">
+      <div class="locker-interior">
+        <div class="locker-glow"></div>
+        ${scenePropMarkup()}
+      </div>
     </div>
-    <section class="paper-card" aria-live="polite">
+    <section class="dialogue-box" aria-live="polite">
+      <div class="speaker-tag">YOU</div>
+      <p>${escapeHtml(dialogueText(lockerNumber))}</p>
+      <span class="dialogue-caret"></span>
+    </section>
+    <section class="paper-card" aria-label="Case note and choices">
       ${sceneMarkup(lockerNumber)}
       ${game.message ? `<p class="status-note">${escapeHtml(game.message)}</p>` : ""}
     </section>
   `;
   bindSceneEvents();
+}
+
+function scenePropMarkup() {
+  if ([GAME_STATES.INSIDE_LOCKER, GAME_STATES.TRAPPER_KEEPER_SELECTION, GAME_STATES.TRAPPER_KEEPER_UNLOCK_ANIMATION, GAME_STATES.NAME_REVEAL].includes(game.currentState)) {
+    return `
+      <div class="trapper-art ${game.currentState === GAME_STATES.NAME_REVEAL ? "open-art" : ""}">
+        <div class="trapper-grid"></div>
+        <div class="trapper-shape one"></div>
+        <div class="trapper-shape two"></div>
+        ${game.currentState === GAME_STATES.NAME_REVEAL ? `<span class="art-reveal-name">${escapeHtml(game.guessedName || "???")}</span>` : ""}
+      </div>
+      <div class="side-lock ${game.currentState === GAME_STATES.TRAPPER_KEEPER_UNLOCK_ANIMATION ? "unlocking" : ""}">${smallLockSlots()}</div>
+      ${game.currentState === GAME_STATES.TRAPPER_KEEPER_UNLOCK_ANIMATION ? bigCombinationMarkup(game.secondStageSelections) : ""}
+    `;
+  }
+
+  return `
+    <div class="locker-row">${lockerMarkup(game.nameLength ? 100 + game.nameLength : NaN)}</div>
+    ${game.currentState === GAME_STATES.LOCKER_UNLOCK_ANIMATION ? bigCombinationMarkup(game.firstStageSelections) : ""}
+  `;
+}
+
+function smallLockSlots() {
+  return Array.from({ length: 12 }, (_, index) => `<span>${(index % 9) + 1}</span>`).join("");
+}
+
+function bigCombinationMarkup(selections) {
+  const wheels = selections.length ? selections : [7, 8, 9];
+  return `
+    <div class="big-combo-wheels">
+      ${wheels.map((selection) => `
+        <div class="combo-wheel">
+          <span>${selection + 7}</span>
+          <strong>${selection + 1}</strong>
+          <span>${(selection + 2) % 10}</span>
+        </div>
+      `).join("")}
+    </div>
+  `;
 }
 
 function lockerMarkup(lockerNumber) {
@@ -155,6 +202,31 @@ function lockerMarkup(lockerNumber) {
       return `<div class="locker ${index === 2 ? "target" : ""}"><span>${number}</span><i></i></div>`;
     })
     .join("");
+}
+
+function dialogueText(lockerNumber) {
+  switch (game.currentState) {
+    case GAME_STATES.TITLE:
+      return "Think of a name. Don't say it out loud. We'll turn it into a locker mystery.";
+    case GAME_STATES.HALLWAY_NAME_LENGTH:
+      return "Hmm... how many letters were in my crush's name again?";
+    case GAME_STATES.MOVE_TO_LOCKER:
+      return `Locker ${lockerNumber}. That's the one.`;
+    case GAME_STATES.LOCKER_GROUP_SELECTION:
+      return `Letter ${game.currentLetterIndex + 1} of ${game.nameLength}... which row hides it?`;
+    case GAME_STATES.LOCKER_UNLOCK_ANIMATION:
+      return "The locker combo is scribbled down. Time to try it.";
+    case GAME_STATES.INSIDE_LOCKER:
+      return "There's a Trapper Keeper in here... and of course it has another lock.";
+    case GAME_STATES.TRAPPER_KEEPER_SELECTION:
+      return `Letter ${game.currentLetterIndex + 1} of ${game.nameLength}... which strip reveals it?`;
+    case GAME_STATES.TRAPPER_KEEPER_UNLOCK_ANIMATION:
+      return "The round lock clicks through the numbers.";
+    case GAME_STATES.NAME_REVEAL:
+      return "The secret note is open. Case closed.";
+    default:
+      return "";
+  }
 }
 
 function sceneMarkup(lockerNumber) {
@@ -172,8 +244,7 @@ function sceneMarkup(lockerNumber) {
       return `
         <form data-action="submit-length">
           <p class="eyebrow">Hallway memory</p>
-          <h2>Hmm... how many letters were in my crush&apos;s name again?</h2>
-          <label class="number-label" for="name-length">Scribble the number</label>
+          <label class="number-label" for="name-length">Scribble the number of letters</label>
           <input id="name-length" inputmode="numeric" min="1" max="26" pattern="[0-9]*" type="number" value="${escapeHtml(lengthDraft)}" />
           <button class="sticker-button" type="submit">Circle it</button>
         </form>
@@ -183,14 +254,13 @@ function sceneMarkup(lockerNumber) {
       return `
         <p class="eyebrow">Found the locker</p>
         <h2>Locker ${lockerNumber}</h2>
-        <p>The hallway gets quiet. The middle locker is definitely the one.</p>
+        <p>The middle locker is framed between the others.</p>
         <button class="sticker-button" data-action="locker-clues">Check the note</button>
       `;
 
     case GAME_STATES.LOCKER_GROUP_SELECTION:
       return cluePickerMarkup({
-        title: `Letter ${game.currentLetterIndex + 1} of ${game.nameLength}... which row hides it?`,
-        subtitle: "Tap a paper row for each letter. These become the locker combo.",
+        subtitle: "Tap the row where each letter is hiding. These numbers become the locker combo.",
         rows: game.alphabetGroups,
         selections: game.firstStageSelections,
         action: "locker-row",
@@ -200,23 +270,21 @@ function sceneMarkup(lockerNumber) {
       return `
         <p class="eyebrow">Locker combo</p>
         <h2>${toHumanCombination(game.firstStageSelections)}</h2>
-        <p>The dial clicks. The handle rattles. The locker door gives way.</p>
+        <p>The tumblers roll into place.</p>
         <button class="sticker-button" data-action="open-locker">Open locker</button>
       `;
 
     case GAME_STATES.INSIDE_LOCKER:
       return `
         <p class="eyebrow">Inside locker ${lockerNumber}</p>
-        <h2>Books, stickers, and a Trapper Keeper.</h2>
-        <div class="trapper-keeper closed"><span>TOP SECRET</span></div>
-        <p>There&apos;s another lock...</p>
-        <button class="sticker-button" data-action="trapper">Try the round lock</button>
+        <h2>Top Secret</h2>
+        <p>The Trapper Keeper is waiting behind the torn note.</p>
+        <button class="sticker-button" data-action="trapper">Try the lock</button>
       `;
 
     case GAME_STATES.TRAPPER_KEEPER_SELECTION:
       return cluePickerMarkup({
-        title: `Letter ${game.currentLetterIndex + 1} of ${game.nameLength}... which strip reveals it?`,
-        subtitle: "Now tap the clue strip with the right hidden letter.",
+        subtitle: "Tap the strip that reveals each hidden letter.",
         rows: game.transposedGroups,
         selections: game.secondStageSelections,
         action: "trapper-row",
@@ -227,7 +295,6 @@ function sceneMarkup(lockerNumber) {
       return `
         <p class="eyebrow">Trapper Keeper combo</p>
         <h2>${toHumanCombination(game.secondStageSelections)}</h2>
-        <div class="combo-lock">${game.secondStageSelections.at(-1) + 1}</div>
         <p>Almost there...</p>
         <button class="sticker-button" data-action="reveal">Pop it open</button>
       `;
@@ -235,8 +302,8 @@ function sceneMarkup(lockerNumber) {
     case GAME_STATES.NAME_REVEAL:
       return `
         <p class="eyebrow">I like...</p>
-        <div class="trapper-keeper open"><span class="revealed-name">${escapeHtml(game.guessedName)}</span></div>
-        <h2>Case closed.</h2>
+        <h2 class="revealed-name">${escapeHtml(game.guessedName)}</h2>
+        <p>Case closed.</p>
         <button class="sticker-button" data-action="start">Play Again</button>
       `;
 
@@ -245,7 +312,7 @@ function sceneMarkup(lockerNumber) {
   }
 }
 
-function cluePickerMarkup({ title, subtitle, rows, selections, action, activeLetterIndex = null }) {
+function cluePickerMarkup({ subtitle, rows, selections, action, activeLetterIndex = null }) {
   const rowMarkup = rows
     .map((row, index) => {
       const isBlankForThisLetter = activeLetterIndex !== null && row[activeLetterIndex] === "_";
@@ -260,7 +327,6 @@ function cluePickerMarkup({ title, subtitle, rows, selections, action, activeLet
 
   return `
     <p class="eyebrow">Notebook clue</p>
-    <h2>${escapeHtml(title)}</h2>
     <p>${escapeHtml(subtitle)}</p>
     <div class="clue-list">${rowMarkup}</div>
     <p class="combo-scribble">Combo so far: ${selections.length ? toHumanCombination(selections) : "___"}</p>
