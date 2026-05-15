@@ -105,6 +105,7 @@ button {
 
 .dialogue-box {
   background: linear-gradient(#ffe9a6, #f3c86d);
+  clip-path: polygon(1.2rem 0, calc(100% - 1.2rem) 0, 100% 1.2rem, 100% calc(100% - 1.2rem), calc(100% - 1.2rem) 100%, 1.2rem 100%, 0 calc(100% - 1.2rem), 0 1.2rem);
   border: 4px solid var(--black);
   box-shadow: 0 0 0 3px #f6d88a, 6px 8px 0 rgba(0, 0, 0, 0.72);
   left: 50%;
@@ -496,7 +497,7 @@ p {
 }
 
 .locker-lock-body,
-.locker-lock-state {
+.locker-lock-dial {
   filter: drop-shadow(0 16px 20px rgba(0, 0, 0, 0.55));
   left: 50%;
   max-height: 37svh;
@@ -508,7 +509,7 @@ p {
 }
 
 .locker-lock-body[hidden],
-.locker-lock-state[hidden] {
+.locker-lock-dial[hidden] {
   display: none;
 }
 
@@ -520,8 +521,13 @@ p {
   position: absolute;
 }
 
-.locker-lock-state {
+.locker-lock-body {
   animation: lock-pop 520ms ease-out both;
+}
+
+.locker-lock-dial {
+  animation: lock-dial-spin 760ms cubic-bezier(0.2, 0.9, 0.2, 1.05) both;
+  transform: translateX(-50%) rotate(var(--lock-rotation));
 }
 
 @keyframes flash-white {
@@ -538,6 +544,15 @@ p {
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes lock-dial-spin {
+  from {
+    transform: translateX(-50%) rotate(0deg) scale(0.98);
+  }
+  to {
+    transform: translateX(-50%) rotate(var(--lock-rotation)) scale(1);
   }
 }
 

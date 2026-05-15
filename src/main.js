@@ -240,7 +240,7 @@ function scenePropMarkup() {
   }
 
   if (game.currentState === GAME_STATES.TRAPPER_KEEPER_INTRO || game.currentState === GAME_STATES.TRAPPER_KEEPER_SELECTION || game.currentState === GAME_STATES.TRAPPER_KEEPER_UNLOCK_ANIMATION) {
-    return `${trapperDialMarkup()}${bigCombinationMarkup(game.secondStageSelections, "trapper")}`;
+    return `${trapperDialMarkup()}${trapperLargeDialMarkup()}`;
   }
 
   if (game.currentState === GAME_STATES.NAME_REVEAL) {
@@ -265,14 +265,18 @@ function lockerNumberPlatesMarkup() {
 }
 
 function lockerLockMarkup() {
-  const lockSource = game.currentState === GAME_STATES.LOCKER_UNLOCK_ANIMATION ? ASSETS.lockerLock.open : ASSETS.lockerLock.on;
+  const lockBodySource = game.currentState === GAME_STATES.LOCKER_UNLOCK_ANIMATION ? ASSETS.lockerLock.offBody : ASSETS.lockerLock.onBody;
   return `
-    <div class="locker-lock-focus ${game.currentState === GAME_STATES.LOCKER_UNLOCK_ANIMATION ? "lock-open-flash" : ""}">
+    <div class="locker-lock-focus ${game.currentState === GAME_STATES.LOCKER_UNLOCK_ANIMATION ? "lock-open-flash" : ""}" style="--lock-rotation: ${lockerDialRotation()}deg">
       <div class="lock-gradient"></div>
-      ${assetImage(ASSETS.lockerLock.body, "locker-lock-body")}
-      ${assetImage(lockSource, "locker-lock-state")}
+      ${assetImage(lockBodySource, "locker-lock-body")}
+      ${assetImage(ASSETS.lockerLock.dial, "locker-lock-dial")}
     </div>
   `;
+}
+
+function lockerDialRotation() {
+  return game.firstStageSelections.reduce((total, selection, index) => total + ((selection + 1) * 36) + (index * 18), 0);
 }
 
 function trapperDialMarkup() {
@@ -419,7 +423,16 @@ function cluePickerMarkup({ heading, subtitle, rows, selections, action, activeL
   `;
 }
 
-function bigCombinationMarkup(selections, stage) {
+function trapperLargeDialMarkup() {
+  if (!game.nameLength || game.currentState === GAME_STATES.TRAPPER_KEEPER_INTRO) {
+    return "";
+  }
+
+  const values = Array.from({ length: game.nameLength }, (_, index) => game.secondStageSelections[index] !== undefined ? game.secondStageSelections[index] + 1 : 0);
+  return bigCombinationMarkup(values, "trapper", true);
+}
+
+function bigCombinationMarkup(selections, stage, valuesAreDigits = false) {
   if (!selections.length) {
     return "";
   }
@@ -427,7 +440,7 @@ function bigCombinationMarkup(selections, stage) {
   return `
     <div class="big-combo-wheels ${stage === "trapper" ? "trapper-big-dials" : ""}">
       ${selections.map((selection) => {
-        const value = selection + 1;
+        const value = valuesAreDigits ? selection : selection + 1;
         return `
           <div class="combo-wheel ${stage === "trapper" ? "combo-wheel-image" : ""}">
             ${stage === "trapper" ? assetImage(mainDialPath(value), "main-dial-art") : ""}

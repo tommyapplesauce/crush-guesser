@@ -34,9 +34,9 @@ The current prototype uses CSS placeholder art based on the supplied mockups so 
 Expected source groups:
 
 - `backgrounds/` for `view-1-school-hallway.PNG` through `view-6-trapper-keeper-open.PNG`.
-- `hand with paper/` for `hand-with-paper-hallway.PNG`, `hand-with-paper-locker.PNG`, and `hand-with-paper-trapper-keeper.PNG`.
-- `lock/` for the locker lock body, on state, and popped-open state.
-- `Dial/` and `Dial/perspective/` for `tk-dial-0.PNG` through `tk-dial-9.PNG` and 17 perspective dial slots.
+- `hand-with-paper/` for `hand-with-paper-hallway.PNG`, `hand-with-paper-locker.PNG`, and `hand-with-paper-trapper-keeper.PNG`.
+- `lock/` for the locker lock body-on, body-off, and rotating dial.
+- `dial/` and `dial/perspective/` for `tk-dial-0.PNG` through `tk-dial-9.PNG` and 17 perspective dial slots.
 
 ## Version 1 limitations
 

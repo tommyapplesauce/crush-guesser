@@ -4,24 +4,24 @@ export const ASSETS = Object.freeze({
   backgrounds: {
     view1Hallway: assetPath("backgrounds/view-1-school-hallway.PNG"),
     view2LockerLocks: assetPath("backgrounds/view-2-locker-closed-lock-on.PNG"),
-    view3LockerLockOff: assetPath("backgrounds/view-3-locker-closed-lock-off.PNG"),
+    view3LockerLockOff: assetPath("backgrounds/view-3-locler-closed-lock-off.PNG"),
     view4LockerOpen: assetPath("backgrounds/view-4-locker-open.PNG"),
     view5TrapperKeeper: assetPath("backgrounds/view-5-trapper-keeper-closed.PNG"),
     view6TrapperKeeperOpen: assetPath("backgrounds/view-6-trapper-keeper-open.PNG"),
   },
   handsWithPaper: {
-    hallway: assetPath("hand with paper/hand-with-paper-hallway.PNG"),
-    locker: assetPath("hand with paper/hand-with-paper-locker.PNG"),
-    trapperKeeper: assetPath("hand with paper/hand-with-paper-trapper-keeper.PNG"),
+    hallway: assetPath("hand-with-paper/hand-with-paper-hallway.PNG"),
+    locker: assetPath("hand-with-paper/hand-with-paper-locker.PNG"),
+    trapperKeeper: assetPath("hand-with-paper/hand-with-paper-trapper-keeper.PNG"),
   },
   lockerLock: {
-    body: assetPath("lock/lock-body.PNG"),
-    on: assetPath("lock/lock-on.PNG"),
-    open: assetPath("lock/lock-open.PNG"),
+    offBody: assetPath("lock/locker-lock-body-off.PNG"),
+    onBody: assetPath("lock/locker-lock-body-on.PNG"),
+    dial: assetPath("lock/locker-lock-dial.PNG"),
   },
   trapperDial: {
-    main: assetPath("Dial/main-dial.PNG"),
-    perspectiveFolder: `${SOURCE_ROOT}/Dial/perspective`,
+    mainFolder: `${SOURCE_ROOT}/dial`,
+    perspectiveFolder: `${SOURCE_ROOT}/dial/perspective`,
   },
 });
 
@@ -30,11 +30,11 @@ export function assetPath(relativePath) {
 }
 
 export function perspectiveDialPath(slotNumber, value = 0) {
-  return `${ASSETS.trapperDial.perspectiveFolder}/dial-${slotNumber}/dial-${slotNumber}-${value}.PNG`;
+  return `${ASSETS.trapperDial.perspectiveFolder}/Dial-${slotNumber}/dial-${slotNumber}-${value}.PNG`;
 }
 
 export function mainDialPath(value = 0) {
-  return assetPath(`Dial/tk-dial-${value}.PNG`);
+  return `${ASSETS.trapperDial.mainFolder}/tk-dial-${value}.PNG`;
 }
 
 export function backgroundForState(state, states) {
