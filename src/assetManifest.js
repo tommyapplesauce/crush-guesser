@@ -2,26 +2,26 @@ const SOURCE_ROOT = "assets/source_assets";
 
 export const ASSETS = Object.freeze({
   backgrounds: {
-    view1Hallway: assetPath("backgrounds/view-1-school-hallway.png"),
-    view2LockerLocks: assetPath("backgrounds/view-2-locker-locks.png"),
-    view3LockerLockOff: assetPath("backgrounds/view-3-locker-lock-off.png"),
-    view4LockerOpen: assetPath("backgrounds/view-4-locker-open.png"),
-    view5TrapperKeeper: assetPath("backgrounds/view-5-trapper-keeper.png"),
-    view6TrapperKeeperOpen: assetPath("backgrounds/view-6-trapper-keeper-open.png"),
+    view1Hallway: assetPath("backgrounds/view-1-school-hallway.PNG"),
+    view2LockerLocks: assetPath("backgrounds/view-2-locker-closed-lock-on.PNG"),
+    view3LockerLockOff: assetPath("backgrounds/view-3-locler-closed-lock-off.PNG"),
+    view4LockerOpen: assetPath("backgrounds/view-4-locker-open.PNG"),
+    view5TrapperKeeper: assetPath("backgrounds/view-5-trapper-keeper-closed.PNG"),
+    view6TrapperKeeperOpen: assetPath("backgrounds/view-6-trapper-keeper-open.PNG"),
   },
-  handsWithPaper: [
-    assetPath("hand with paper/hand-paper-1.png"),
-    assetPath("hand with paper/hand-paper-2.png"),
-    assetPath("hand with paper/hand-paper-3.png"),
-  ],
+  handsWithPaper: {
+    hallway: assetPath("hand-with-paper/hand-with-paper-hallway.PNG"),
+    locker: assetPath("hand-with-paper/hand-with-paper-locker.PNG"),
+    trapperKeeper: assetPath("hand-with-paper/hand-with-paper-trapper-keeper.PNG"),
+  },
   lockerLock: {
-    body: assetPath("lock/lock-body.png"),
-    on: assetPath("lock/lock-on.png"),
-    open: assetPath("lock/lock-open.png"),
+    offBody: assetPath("lock/locker-lock-body-off.PNG"),
+    onBody: assetPath("lock/locker-lock-body-on.PNG"),
+    dial: assetPath("lock/locker-lock-dial.PNG"),
   },
   trapperDial: {
-    main: assetPath("Dial/main-dial.png"),
-    perspectiveFolder: `${SOURCE_ROOT}/Dial/perspective`,
+    mainFolder: `${SOURCE_ROOT}/dial`,
+    perspectiveFolder: `${SOURCE_ROOT}/dial/perspective`,
   },
 });
 
@@ -29,12 +29,16 @@ export function assetPath(relativePath) {
   return `${SOURCE_ROOT}/${relativePath}`;
 }
 
-export function perspectiveDialPath(slotNumber) {
-  return `${ASSETS.trapperDial.perspectiveFolder}/dial-${slotNumber}/dial-${slotNumber}.png`;
+export function perspectiveDialPath(slotNumber, value = 0) {
+  return `${ASSETS.trapperDial.perspectiveFolder}/Dial-${slotNumber}/dial-${slotNumber}-${value}.PNG`;
+}
+
+export function mainDialPath(value = 0) {
+  return `${ASSETS.trapperDial.mainFolder}/tk-dial-${value}.PNG`;
 }
 
 export function backgroundForState(state, states) {
-  if (state === states.TITLE || state === states.HALLWAY_NAME_LENGTH) {
+  if (state === states.TITLE || state === states.INTRO_NARRATION || state === states.HALLWAY_NAME_LENGTH) {
     return ASSETS.backgrounds.view1Hallway;
   }
   if (state === states.MOVE_TO_LOCKER || state === states.LOCKER_GROUP_SELECTION) {
@@ -46,7 +50,7 @@ export function backgroundForState(state, states) {
   if (state === states.INSIDE_LOCKER) {
     return ASSETS.backgrounds.view4LockerOpen;
   }
-  if (state === states.TRAPPER_KEEPER_SELECTION || state === states.TRAPPER_KEEPER_UNLOCK_ANIMATION) {
+  if (state === states.TRAPPER_KEEPER_INTRO || state === states.TRAPPER_KEEPER_SELECTION || state === states.TRAPPER_KEEPER_UNLOCK_ANIMATION) {
     return ASSETS.backgrounds.view5TrapperKeeper;
   }
   if (state === states.NAME_REVEAL) {
