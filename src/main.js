@@ -7,6 +7,7 @@ import {
   transposeGroups,
 } from "./crushLogic.js";
 import { GAME_STATES, createInitialGameState } from "./gameStates.js";
+import { ASSETS, backgroundForState, perspectiveDialPath } from "./assetManifest.js";
 
 let game = createInitialGameState();
 let lengthDraft = "5";
@@ -137,7 +138,8 @@ function render() {
   const lockerNumber = game.nameLength ? 100 + game.nameLength : NaN;
   app.className = `app-shell ${sceneForState(game.currentState)}`;
   app.innerHTML = `
-    <div class="scene-stage" aria-hidden="true">
+    <div class="scene-stage ${sceneAssetClass()}" aria-hidden="true">
+      ${assetImage(backgroundForState(game.currentState, GAME_STATES), "scene-background")}
       <div class="locker-interior">
         <div class="locker-glow"></div>
         ${scenePropMarkup()}
@@ -148,16 +150,25 @@ function render() {
       <p>${escapeHtml(dialogueText(lockerNumber))}</p>
       <span class="dialogue-caret"></span>
     </section>
-    <section class="paper-card" aria-label="Case note and choices">
-      ${sceneMarkup(lockerNumber)}
-      ${game.message ? `<p class="status-note">${escapeHtml(game.message)}</p>` : ""}
-    </section>
+    ${paperMarkup(lockerNumber)}
   `;
   bindSceneEvents();
 }
 
+function paperMarkup(lockerNumber) {
+  return `
+    <section class="paper-stage" aria-label="Hands holding clue paper">
+      ${assetImage(handPaperForState(), "hand-paper-art")}
+      <div class="paper-card" aria-label="Case note and choices">
+        ${sceneMarkup(lockerNumber)}
+        ${game.message ? `<p class="status-note">${escapeHtml(game.message)}</p>` : ""}
+      </div>
+    </section>
+  `;
+}
+
 function scenePropMarkup() {
-  if ([GAME_STATES.INSIDE_LOCKER, GAME_STATES.TRAPPER_KEEPER_SELECTION, GAME_STATES.TRAPPER_KEEPER_UNLOCK_ANIMATION, GAME_STATES.NAME_REVEAL].includes(game.currentState)) {
+  if (isTrapperScene()) {
     return `
       <div class="trapper-art ${game.currentState === GAME_STATES.NAME_REVEAL ? "open-art" : ""}">
         <div class="trapper-grid"></div>
@@ -165,15 +176,108 @@ function scenePropMarkup() {
         <div class="trapper-shape two"></div>
         ${game.currentState === GAME_STATES.NAME_REVEAL ? `<span class="art-reveal-name">${escapeHtml(game.guessedName || "???")}</span>` : ""}
       </div>
-      <div class="side-lock ${game.currentState === GAME_STATES.TRAPPER_KEEPER_UNLOCK_ANIMATION ? "unlocking" : ""}">${smallLockSlots()}</div>
+      ${trapperDialMarkup()}
       ${game.currentState === GAME_STATES.TRAPPER_KEEPER_UNLOCK_ANIMATION ? bigCombinationMarkup(game.secondStageSelections) : ""}
     `;
   }
 
   return `
     <div class="locker-row">${lockerMarkup(game.nameLength ? 100 + game.nameLength : NaN)}</div>
+    ${lockerLockMarkup()}
     ${game.currentState === GAME_STATES.LOCKER_UNLOCK_ANIMATION ? bigCombinationMarkup(game.firstStageSelections) : ""}
   `;
+}
+
+function lockerLockMarkup() {
+  if (![GAME_STATES.MOVE_TO_LOCKER, GAME_STATES.LOCKER_GROUP_SELECTION, GAME_STATES.LOCKER_UNLOCK_ANIMATION].includes(game.currentState)) {
+    return "";
+  }
+
+  const lockSource = game.currentState === GAME_STATES.LOCKER_UNLOCK_ANIMATION ? ASSETS.lockerLock.open : ASSETS.lockerLock.on;
+  return `
+    <div class="locker-lock-focus">
+      <div class="lock-gradient"></div>
+      ${assetImage(ASSETS.lockerLock.body, "locker-lock-body")}
+      ${assetImage(lockSource, "locker-lock-state")}
+    </div>
+  `;
+}
+
+function trapperDialMarkup() {
+  if (![GAME_STATES.TRAPPER_KEEPER_SELECTION, GAME_STATES.TRAPPER_KEEPER_UNLOCK_ANIMATION].includes(game.currentState)) {
+    return "";
+  }
+
+  const slots = getCenteredDialSlots(game.nameLength || 1);
+  return `
+    <div class="perspective-dial-rack" style="--dial-count: ${slots.length}">
+      ${slots.map((slotNumber, visualIndex) => `
+        <div class="perspective-dial" style="--dial-left: ${dialLeftPercent(slotNumber)}%; --dial-offset: ${Math.abs(slotNumber - 9)}">
+          ${assetImage(perspectiveDialPath(slotNumber), "perspective-dial-art")}
+          <span>${dialDisplayValue(visualIndex)}</span>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function getCenteredDialSlots(count) {
+  const cappedCount = Math.min(Math.max(count, 1), 17);
+  const centerSlot = 9;
+  const slots = [centerSlot];
+  for (let offset = 1; slots.length < cappedCount; offset += 1) {
+    if (centerSlot - offset >= 1) {
+      slots.push(centerSlot - offset);
+    }
+    if (slots.length < cappedCount && centerSlot + offset <= 17) {
+      slots.push(centerSlot + offset);
+    }
+  }
+  return slots.sort((a, b) => a - b);
+}
+
+function dialLeftPercent(slotNumber) {
+  return 50 + ((slotNumber - 9) * 5.2);
+}
+
+function dialDisplayValue(visualIndex) {
+  if (game.currentState === GAME_STATES.TRAPPER_KEEPER_UNLOCK_ANIMATION && game.secondStageSelections[visualIndex] !== undefined) {
+    return game.secondStageSelections[visualIndex] + 1;
+  }
+  return visualIndex + 1;
+}
+
+
+function isTrapperScene() {
+  return [GAME_STATES.INSIDE_LOCKER, GAME_STATES.TRAPPER_KEEPER_SELECTION, GAME_STATES.TRAPPER_KEEPER_UNLOCK_ANIMATION, GAME_STATES.NAME_REVEAL].includes(game.currentState);
+}
+
+function sceneAssetClass() {
+  const classes = [];
+  if (isTrapperScene()) {
+    classes.push("trapper-background-scene");
+  }
+  if ([GAME_STATES.MOVE_TO_LOCKER, GAME_STATES.LOCKER_GROUP_SELECTION, GAME_STATES.LOCKER_UNLOCK_ANIMATION].includes(game.currentState)) {
+    classes.push("locker-closeup-scene");
+  }
+  if (game.currentState === GAME_STATES.NAME_REVEAL) {
+    classes.push("reveal-background-scene");
+  }
+  return classes.join(" ");
+}
+
+function handPaperForState() {
+  if (game.currentState === GAME_STATES.TRAPPER_KEEPER_SELECTION || game.currentState === GAME_STATES.NAME_REVEAL) {
+    return ASSETS.handsWithPaper[2];
+  }
+  if (game.currentState === GAME_STATES.LOCKER_GROUP_SELECTION || game.currentState === GAME_STATES.LOCKER_UNLOCK_ANIMATION) {
+    return ASSETS.handsWithPaper[1];
+  }
+  return ASSETS.handsWithPaper[0];
+}
+
+function assetImage(src, className, alt = "") {
+  return `<img class="${className}" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="eager" decoding="async" onerror="this.hidden=true" />`;
 }
 
 function smallLockSlots() {
