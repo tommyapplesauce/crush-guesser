@@ -4,10 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Crush Guesser</title>
-    <link rel="stylesheet" href="./src/styles.css" />
+    <link rel="stylesheet" href="./src/styles.css?v=20260515-1" />
   </head>
   <body>
-    <main id="app" class="app-shell hallway-scene"></main>
-    <script type="module" src="./src/main.js"></script>
+    <main id="app" class="app-shell hallway-scene">
+      <section class="boot-card">
+        <h1>Crush Guesser</h1>
+        <p>Loading the secret crush case file...</p>
+      </section>
+      <noscript>This game needs JavaScript enabled to run.</noscript>
+    </main>
+    <script>
+      window.addEventListener("error", (event) => {
+        if (!event.message) return;
+        const app = document.querySelector("#app");
+        if (!app) return;
+        app.innerHTML = `<section class="boot-card boot-error"><h1>Crush Guesser</h1><p>Launch error: ${event.message}</p><small>Open the browser console for details.</small></section>`;
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        const app = document.querySelector("#app");
+        if (!app) return;
+        app.innerHTML = `<section class="boot-card boot-error"><h1>Crush Guesser</h1><p>Launch error: ${event.reason?.message || event.reason}</p><small>Open the browser console for details.</small></section>`;
+      });
+    </script>
+    <script type="module" src="./src/main.js?v=20260515-1"></script>
   </body>
 </html>

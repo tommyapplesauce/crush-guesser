@@ -28,7 +28,7 @@ const app = document.querySelector("#app");
 
 function setGame(nextGame) {
   game = typeof nextGame === "function" ? nextGame(game) : nextGame;
-  render();
+  renderSafely();
 }
 
 function startCase() {
@@ -171,6 +171,31 @@ function revealName() {
     currentState: GAME_STATES.NAME_REVEAL,
     message: "Case closed.",
   }));
+}
+
+function renderSafely() {
+  try {
+    render();
+  } catch (error) {
+    showFatalError(error);
+    throw error;
+  }
+}
+
+function showFatalError(error) {
+  const message = error?.message || String(error);
+  console.error("Crush Guesser launch error", error);
+  if (!app) {
+    return;
+  }
+  app.className = "app-shell hallway-scene";
+  app.innerHTML = `
+    <section class="boot-card boot-error">
+      <h1>Crush Guesser</h1>
+      <p>Launch error: ${escapeHtml(message)}</p>
+      <small>Open the browser console for details.</small>
+    </section>
+  `;
 }
 
 function render() {
@@ -607,4 +632,4 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-render();
+renderSafely();
