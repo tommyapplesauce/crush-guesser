@@ -1,6 +1,6 @@
-# Crush Guesser source asset notes
+# Crush Guesser asset drop folder
 
-The prototype is wired to load the temporary art from `assets/source_assets`. CSS placeholders remain as a fallback if a file is missing while filenames are still being finalized.
+The prototype is now wired to prefer the source art folder at `assets/source_assets` when those files exist. CSS placeholders remain in place as a fallback so the app still runs before every filename is finalized.
 
 ## Expected source layout
 
